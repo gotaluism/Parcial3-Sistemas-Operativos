@@ -1,0 +1,678 @@
+buntu@ip-10-0-1-57:~$ microk8s add-node
+From the node you wish to join to this cluster, run the following:
+microk8s join 10.0.1.57:25000/45c98f8af40b2947935a35b0f3a42ed1/5fb5f0b56418
+
+Use the '--worker' flag to join a node as a worker not running the control plane, eg:
+microk8s join 10.0.1.57:25000/45c98f8af40b2947935a35b0f3a42ed1/5fb5f0b56418 --worker
+
+If the node you are adding is not reachable through the default interface you can use one of the following:
+microk8s join 10.0.1.57:25000/45c98f8af40b2947935a35b0f3a42ed1/5fb5f0b56418
+ubuntu@ip-10-0-1-57:~$ microk8s add-node
+From the node you wish to join to this cluster, run the following:
+microk8s join 10.0.1.57:25000/f467d81e6ebaf35c106bb3133aac762a/5fb5f0b56418
+
+Use the '--worker' flag to join a node as a worker not running the control plane, eg:
+microk8s join 10.0.1.57:25000/f467d81e6ebaf35c106bb3133aac762a/5fb5f0b56418 --worker
+
+If the node you are adding is not reachable through the default interface you can use one of the following:
+microk8s join 10.0.1.57:25000/f467d81e6ebaf35c106bb3133aac762a/5fb5f0b56418
+ubuntu@ip-10-0-1-57:~$ aws eks update-kubeconfig --name KubeCluster --region us-east-1
+Command 'aws' not found, but can be installed with:
+sudo snap install aws-cli  # version 1.15.58, or
+sudo apt  install awscli   # version 2.14.6-1
+See 'snap info aws-cli' for additional versions.
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get nodes
+NAME            STATUS   ROLES    AGE     VERSION
+ip-10-0-1-169   Ready    <none>   2m10s   v1.31.2
+ip-10-0-1-240   Ready    <none>   2m34s   v1.31.2
+ip-10-0-1-57    Ready    <none>   9m5s    v1.31.2
+
+
+ubuntu@ip-10-0-1-57:~$ ls
+mysql_deployment.yaml  pv_mysql.yaml  snap
+ubuntu@ip-10-0-1-57:~$ nano mysql-secret.yaml
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f pv_mysql.yaml
+microk8s kubectl apply -f mysql-secret.yaml
+microk8s kubectl apply -f mysql_deployment.yaml
+persistentvolume/mysql-pv-volume created
+persistentvolumeclaim/mysql-pv-claim created
+secret/mysql-secret created
+service/mysql created
+deployment.apps/mysql created
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pv
+NAME              CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                    STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+mysql-pv-volume   1Gi        RWO            Delete           Bound    default/mysql-pv-claim   local          <unset>                          5s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pvc
+NAME             STATUS   VOLUME            CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+mysql-pv-claim   Bound    mysql-pv-volume   1Gi        RWO            local          <unset>                 12s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get secrets
+NAME           TYPE     DATA   AGE
+mysql-secret   Opaque   4      21s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get deployments
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+mysql   1/1     1            1           25s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+mysql-5694f6b65f-jk5qb   1/1     Running   0          29s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get services
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP   10.152.183.1    <none>        443/TCP          28m
+mysql        NodePort    10.152.183.81   <none>        3306:30461/TCP   4m15s
+ubuntu@ip-10-0-1-57:~$ nano pv_wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ nano wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f pv_wordpress.yaml
+persistentvolume/wp-pv-volume created
+persistentvolumeclaim/wp-pv-claim created
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pv
+NAME              CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                    STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+mysql-pv-volume   1Gi        RWO            Delete           Bound    default/mysql-pv-claim   local          <unset>                          7m3s
+wp-pv-volume      5Gi        RWO            Delete           Bound    default/wp-pv-claim      local          <unset>                          13s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pvc
+NAME             STATUS   VOLUME            CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+mysql-pv-claim   Bound    mysql-pv-volume   1Gi        RWO            local          <unset>                 7m8s
+wp-pv-claim      Bound    wp-pv-volume      5Gi        RWO            local          <unset>                 18s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f wordpress.yaml
+service/wordpress created
+deployment.apps/wordpress created
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get services
+NAME         TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP      10.152.183.1     <none>        443/TCP          31m
+mysql        NodePort       10.152.183.81    <none>        3306:30461/TCP   7m19s
+wordpress    LoadBalancer   10.152.183.244   <pending>     80:32342/TCP     6s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pods
+NAME                         READY   STATUS    RESTARTS   AGE
+mysql-5694f6b65f-jk5qb       1/1     Running   0          7m31s
+wordpress-84656dcf7b-6kdpj   1/1     Running   0          19s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get services
+NAME         TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP      10.152.183.1     <none>        443/TCP          32m
+mysql        NodePort       10.152.183.81    <none>        3306:30461/TCP   7m38s
+wordpress    LoadBalancer   10.152.183.244   <pending>     80:32342/TCP     25s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pods
+NAME                         READY   STATUS    RESTARTS   AGE
+mysql-5694f6b65f-jk5qb       1/1     Running   0          8m21s
+wordpress-84656dcf7b-6kdpj   1/1     Running   0          69s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get services
+NAME         TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP      10.152.183.1     <none>        443/TCP          33m
+mysql        NodePort       10.152.183.81    <none>        3306:30461/TCP   8m25s
+wordpress    LoadBalancer   10.152.183.244   <pending>     80:32342/TCP     72s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get services
+NAME         TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP      10.152.183.1     <none>        443/TCP          34m
+mysql        NodePort       10.152.183.81    <none>        3306:30461/TCP   9m21s
+wordpress    LoadBalancer   10.152.183.244   <pending>     80:32342/TCP     2m8s
+ubuntu@ip-10-0-1-57:~$ nano wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f wordpress.yaml
+service/wordpress configured
+error: error when retrieving current configuration of:
+Resource: "apps/v1, Resource=deployments", GroupVersionKind: "apps/v1, Kind=Deployment"
+Name: "wordpress", Namespace: "default"
+from server for: "wordpress.yaml": Get "https://127.0.0.1:16443/apis/apps/v1/namespaces/default/deployments/wordpress": dial tcp 127.0.0.1:16443: connect: connection refused - error from a previous attempt: read tcp 127.0.0.1:59432->127.0.0.1:16443: read: connection reset by peer
+ubuntu@ip-10-0-1-57:~$ nano wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f wordpress.yaml
+error: error parsing wordpress.yaml: error converting YAML to JSON: yaml: line 11: could not find expected ':'
+ubuntu@ip-10-0-1-57:~$ nano wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f wordpress.yaml
+service/wordpress configured
+deployment.apps/wordpress unchanged
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pods
+NAME                         READY   STATUS    RESTARTS   AGE
+mysql-5694f6b65f-jk5qb       1/1     Running   0          22m
+wordpress-84656dcf7b-6kdpj   1/1     Running   0          15m
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get services
+NAME         TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP      10.152.183.1     <none>        443/TCP          47m
+mysql        NodePort       10.152.183.81    <none>        3306:30461/TCP   22m
+wordpress    LoadBalancer   10.152.183.244   <pending>     80:30080/TCP     15m
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get services
+NAME         TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP      10.152.183.1     <none>        443/TCP          49m
+mysql        NodePort       10.152.183.81    <none>        3306:30461/TCP   24m
+wordpress    LoadBalancer   10.152.183.244   <pending>     80:30080/TCP     17m
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get nodes
+NAME            STATUS   ROLES    AGE   VERSION
+ip-10-0-1-169   Ready    <none>   49m   v1.31.2
+ip-10-0-1-240   Ready    <none>   50m   v1.31.2
+ip-10-0-1-57    Ready    <none>   56m   v1.31.2
+ubuntu@ip-10-0-1-57:~$ ls
+mysql-secret.yaml  mysql_deployment.yaml  pv_mysql.yaml  pv_wordpress.yaml  snap  wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ nano mysql-secret.yaml
+ubuntu@ip-10-0-1-57:~$ nano wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ nano wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ cat wordpress.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
+  selector:
+    app: wordpress
+    tier: frontend
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+    spec:
+      containers:
+      - image: wordpress:4.8-apache
+        name: wordpress
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: 10.152.183.81   # IP del servicio MySQL (CLUSTER-IP)
+        - name: WORDPRESS_DB_PASSWORD
+          value: password        # Contraseña en texto plano (no recomendada para producción)
+        ports:
+        - containerPort: 80
+          name: wordpress
+        volumeMounts:
+        - name: wordpress-persistent-storage
+          mountPath: /var/www/html
+      volumes:
+      - name: wordpress-persistent-storage
+        persistentVolumeClaim:
+          claimName: wp-pv-claim
+ubuntu@ip-10-0-1-57:~$ ls
+mysql-secret.yaml  mysql_deployment.yaml  pv_mysql.yaml  pv_wordpress.yaml  snap  wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ cat pv_wordpress.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: wp-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: local
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:
+    path: "/mnt/wp_data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wp-pv-claim
+spec:
+  storageClassName: local
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pods
+NAME                         READY   STATUS    RESTARTS   AGE
+mysql-5694f6b65f-jk5qb       1/1     Running   0          41m
+wordpress-84656dcf7b-6kdpj   1/1     Running   0          34m
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl exec -it mysql-5694f6b65f-jk5qb -- bash
+error: you must specify at least one command for the container
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl exec -it 5694f6b65f-jk5qb -- bash
+error: you must specify at least one command for the container
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl exec -it mysql-5694f6b65f-jk5qb -- /bin/bash
+root@mysql-5694f6b65f-jk5qb:/# mysql -u root -p
+ERROR 1045 (28000): Access denied for user 'root -p'@'localhost' (using password: NO)
+root@mysql-5694f6b65f-jk5qb:/# mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 27
+Server version: 5.6.51 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2021, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> USE wordpress;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| wordpress          |
++--------------------+
+4 rows in set (0.00 sec)
+
+mysql> USE wordpress;
+Database changed
+mysql> UPDATE wp_users SET user_pass = MD5('mojarra123') WHERE user_login='mojarra';
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> exit
+Bye
+root@mysql-5694f6b65f-jk5qb:/# exit
+exit
+ubuntu@ip-10-0-1-57:~$ ls
+mysql-secret.yaml  mysql_deployment.yaml  pv_mysql.yaml  pv_wordpress.yaml  snap  wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ cat pv_mysql.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: local
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:
+    path: "/mnt/data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+spec:
+  storageClassName: local
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+ubuntu@ip-10-0-1-57:~$ ls
+mysql-secret.yaml  mysql_deployment.yaml  pv_mysql.yaml  pv_wordpress.yaml  snap  wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ cat mysql_deployment.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql
+    #clusterIP: true
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: mysql:5.6
+        name: mysql
+        env:
+          # Use secret in real usage
+        - name: MYSQL_ROOT_PASSWORD
+          value: password
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+ubuntu@ip-10-0-1-57:~$ ls
+mysql-secret.yaml  mysql_deployment.yaml  pv_mysql.yaml  pv_wordpress.yaml  snap  wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ cat mysql-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+type: Opaque
+data:
+  mysql-root-password: cGFzc3dvcmQ=      # 'password' en base64
+  mysql-user: dXNlcg==                   # 'user' en base64 (puedes cambiarlo si deseas otro nombre de usuario)
+  mysql-password: cGFzc3dvcmQ=           # 'password' en base64
+  mysql-database: bXlzcWxkYg==           # 'mysqldb' en base64 (puedes cambiarlo si deseas otro nombre de base de datos)
+
+ubuntu@ip-10-0-1-57:~$ nano ingress.yaml
+ubuntu@ip-10-0-1-57:~$ rm ingress.yaml
+ubuntu@ip-10-0-1-57:~$ nano ingress.yaml
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f ingress.yamll apply -f ingress.yaml
+error: error parsing ingress.yaml: error converting YAML to JSON: yaml: line 2: mapping values are not allowed in this context
+ubuntu@ip-10-0-1-57:~$ nano ingress.yaml
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f ingress.yaml
+Warning: annotation "kubernetes.io/ingress.class" is deprecated, please use 'spec.ingressClassName' instead
+ingress.networking.k8s.io/modapeluda-ingress created
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
+customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io created
+namespace/cert-manager created
+serviceaccount/cert-manager-cainjector created
+serviceaccount/cert-manager created
+serviceaccount/cert-manager-webhook created
+clusterrole.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrole.rbac.authorization.k8s.io/cert-manager-view created
+clusterrole.rbac.authorization.k8s.io/cert-manager-edit created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-approve:cert-manager-io created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-certificatesigningrequests created
+clusterrole.rbac.authorization.k8s.io/cert-manager-webhook:subjectaccessreviews created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-approve:cert-manager-io created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-certificatesigningrequests created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-webhook:subjectaccessreviews created
+role.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+role.rbac.authorization.k8s.io/cert-manager:leaderelection created
+role.rbac.authorization.k8s.io/cert-manager-webhook:dynamic-serving created
+rolebinding.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager-webhook:dynamic-serving created
+service/cert-manager created
+service/cert-manager-webhook created
+deployment.apps/cert-manager-cainjector created
+deployment.apps/cert-manager created
+deployment.apps/cert-manager-webhook created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pods --namespace cert-manager
+NAME                                       READY   STATUS              RESTARTS   AGE
+cert-manager-78bbd55dcc-2hjq4              0/1     ContainerCreating   0          2s
+cert-manager-cainjector-84b9675456-pn6n6   0/1     ContainerCreating   0          2s
+cert-manager-webhook-648cbdff4f-jnklp      0/1     ContainerCreating   0          2s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pods --namespace cert-manager
+NAME                                       READY   STATUS    RESTARTS   AGE
+cert-manager-78bbd55dcc-2hjq4              1/1     Running   0          34s
+cert-manager-cainjector-84b9675456-pn6n6   1/1     Running   0          34s
+cert-manager-webhook-648cbdff4f-jnklp      1/1     Running   0          34s
+ubuntu@ip-10-0-1-57:~$ nano cluster-issuer.yaml
+ubuntu@ip-10-0-1-57:~$ ubuntu@ip-10-0-1-57:~$ cat ingress.ymal
+cat: ingress.ymal: No such file or directory
+ubuntu@ip-10-0-1-57:~$ cat ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: modapeluda-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"  # O el controlador que uses
+spec:
+  rules:
+  - host: modapeluda.tech
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tu-servicio
+            port:
+              number: 30080
+  tls:
+  - hosts:
+    - modapeluda.tech
+    secretName: modapeluda-cert  # Certificado SSL con Cert-Manager
+ubuntu@ip-10-0-1-57:~$ rm ingress.yaml
+ubuntu@ip-10-0-1-57:~$ nando ingress.yaml
+Command 'nando' not found, did you mean:
+  command 'nano' from snap nano (7.2+pkg-4057)
+  command 'nano' from deb nano (7.2-1)
+See 'snap info <snapname>' for additional versions.
+ubuntu@ip-10-0-1-57:~$ nano ingress.yaml
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f ingress.yaml
+ingress.networking.k8s.io/modapeluda-ingress configured
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f cluster_issuer.yaml
+error: the path "cluster_issuer.yaml" does not exist
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f cluster-issuer.yaml
+clusterissuer.cert-manager.io/letsencrypt-production created
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f ingress.yaml
+ingress.networking.k8s.io/modapeluda-ingress unchanged
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get certificates
+NAME              READY   SECRET            AGE
+modapeluda-cert   False   modapeluda-cert   86s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl describe certificate wordpress-tls
+Error from server (NotFound): certificates.cert-manager.io "wordpress-tls" not found
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get certificates
+NAME              READY   SECRET            AGE
+modapeluda-cert   True    modapeluda-cert   3m44s
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl describe certificate wordpress-tls
+Error from server (NotFound): certificates.cert-manager.io "wordpress-tls" not found
+ubuntu@ip-10-0-1-57:~$ microk8s enable cert-manager
+Infer repository core for addon cert-manager
+Addon core/cert-manager is already enabled
+ubuntu@ip-10-0-1-57:~$ microk8s enable ingress dns
+Infer repository core for addon ingress
+Infer repository core for addon dns
+WARNING: Do not enable or disable multiple addons in one command.
+         This form of chained operations on addons will be DEPRECATED in the future.
+         Please, enable one addon at a time: 'microk8s enable <addon>'
+Addon core/ingress is already enabled
+Addon core/dns is already enabled
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply get nodes
+error: Unexpected args: [get nodes]
+See 'kubectl apply -h' for help and examples
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply get pods
+error: Unexpected args: [get pods]
+See 'kubectl apply -h' for help and examples
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply get pod
+error: Unexpected args: [get pod]
+See 'kubectl apply -h' for help and examples
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply get services
+error: Unexpected args: [get services]
+See 'kubectl apply -h' for help and examples
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get services
+NAME         TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP      10.152.183.1     <none>        443/TCP          110m
+mysql        NodePort       10.152.183.81    <none>        3306:30461/TCP   85m
+wordpress    LoadBalancer   10.152.183.244   <pending>     80:30080/TCP     78m
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pods
+NAME                         READY   STATUS    RESTARTS   AGE
+mysql-5694f6b65f-jk5qb       1/1     Running   0          85m
+wordpress-84656dcf7b-6kdpj   1/1     Running   0          78m
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get services
+NAME         TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP      10.152.183.1     <none>        443/TCP          112m
+mysql        NodePort       10.152.183.81    <none>        3306:30461/TCP   87m
+wordpress    LoadBalancer   10.152.183.244   <pending>     80:30080/TCP     80m
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get pods
+NAME                         READY   STATUS    RESTARTS   AGE
+mysql-5694f6b65f-jk5qb       1/1     Running   0          87m
+wordpress-84656dcf7b-6kdpj   1/1     Running   0          80m
+ubuntu@ip-10-0-1-57:~$ microk8s enable cert-manager
+Infer repository core for addon cert-manager
+Addon core/cert-manager is already enabled
+ubuntu@ip-10-0-1-57:~$ microk8s enable ingress dns
+Infer repository core for addon ingress
+Infer repository core for addon dns
+WARNING: Do not enable or disable multiple addons in one command.
+         This form of chained operations on addons will be DEPRECATED in the future.
+         Please, enable one addon at a time: 'microk8s enable <addon>'
+Addon core/ingress is already enabled
+Addon core/dns is already enabled
+ubuntu@ip-10-0-1-57:~$ rm cluster-issuer.yaml
+ubuntu@ip-10-0-1-57:~$ nano cluster-issuer.yaml
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f cluster-issuer.yaml
+clusterissuer.cert-manager.io/lets-encrypt created
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl get clusterissuer
+NAME                     READY   AGE
+lets-encrypt             True    8s
+letsencrypt-production   True    14m
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl create deployment microbot --image=cdkbot/microbot:1
+microk8s kubectl expose deployment microbot --port=80 --type=ClusterIP
+deployment.apps/microbot created
+service/microbot exposed
+ubuntu@ip-10-0-1-57:~$ ls
+cluster-issuer.yaml  mysql-secret.yaml      pv_mysql.yaml      snap
+ingress.yaml         mysql_deployment.yaml  pv_wordpress.yaml  wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ nano ingress.yaml
+ubuntu@ip-10-0-1-57:~$ cat ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: modapeluda-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"                    # Clase de Ingress (NGINX en este caso)
+    cert-manager.io/cluster-issuer: "letsencrypt-production" # Usar ClusterIssuer de Let's Encrypt para SSL
+spec:
+  rules:
+  - host: modapeluda.tech
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tu-servicio     # Cambia "tu-servicio" al nombre real del servicio de WordPress u otro
+            port:
+              number: 80          # Puerto del servicio (no 30080; el Ingress mapea hacia el puerto 80 del servicio)
+  tls:
+  - hosts:
+    - modapeluda.tech
+
+
+ubuntu@ip-10-0-1-57:~$ kubectl apply -f cluster-issuer.yaml
+Command 'kubectl' not found, but can be installed with:
+sudo snap install kubectl
+ubuntu@ip-10-0-1-57:~$ nano cluster-issuer.yaml
+ubuntu@ip-10-0-1-57:~$ kubectl apply -f cluster-issuer.yaml
+Command 'kubectl' not found, but can be installed with:
+sudo snap install kubectl
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl apply -f cluster-issuer.yaml
+clusterissuer.cert-manager.io/letsencrypt-production unchanged
+ubuntu@ip-10-0-1-57:~$ kubectl describe certificate modapeluda-cert
+Command 'kubectl' not found, but can be installed with:
+sudo snap install kubectl
+ubuntu@ip-10-0-1-57:~$ microk8s kubectl describe certificate modapeluda-cert
+Name:         modapeluda-cert
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+API Version:  cert-manager.io/v1
+Kind:         Certificate
+Metadata:
+  Creation Timestamp:  2024-11-03T22:06:09Z
+  Generation:          1
+  Owner References:
+    API Version:           networking.k8s.io/v1
+    Block Owner Deletion:  true
+    Controller:            true
+    Kind:                  Ingress
+    Name:                  modapeluda-ingress
+    UID:                   0df94ac9-307f-4805-903f-7306e214025d
+  Resource Version:        19114
+  UID:                     9d677419-6c3a-4855-aad4-1d8bd29bb1b3
+Spec:
+  Dns Names:
+    modapeluda.tech
+  Issuer Ref:
+    Group:      cert-manager.io
+    Kind:       ClusterIssuer
+    Name:       letsencrypt-production
+  Secret Name:  modapeluda-cert
+  Usages:
+    digital signature
+    key encipherment
+Status:
+  Conditions:
+    Last Transition Time:  2024-11-03T22:07:47Z
+    Message:               Certificate is up to date and has not expired
+    Observed Generation:   1
+    Reason:                Ready
+    Status:                True
+    Type:                  Ready
+  Not After:               2025-02-01T21:09:16Z
+  Not Before:              2024-11-03T21:09:17Z
+  Renewal Time:            2025-01-02T21:09:16Z
+  Revision:                1
+Events:                    <none>
+ubuntu@ip-10-0-1-57:~$ ls
+cluster-issuer.yaml  mysql-secret.yaml      pv_mysql.yaml      snap
+ingress.yaml         mysql_deployment.yaml  pv_wordpress.yaml  wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ cat ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: modapeluda-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"                    # Clase de Ingress (NGINX en este caso)
+    cert-manager.io/cluster-issuer: "letsencrypt-production" # Usar ClusterIssuer de Let's Encrypt para SSL
+spec:
+  rules:
+  - host: modapeluda.tech
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tu-servicio     # Cambia "tu-servicio" al nombre real del servicio de WordPress u otro
+            port:
+              number: 80          # Puerto del servicio (no 30080; el Ingress mapea hacia el puerto 80 del servicio)
+  tls:
+  - hosts:
+    - modapeluda.tech
+    secretName: modapeluda-cert  # Nombre del secreto donde se almacenará el certificado SSL
+ubuntu@ip-10-0-1-57:~$ ls
+cluster-issuer.yaml  mysql-secret.yaml      pv_mysql.yaml      snap
+ingress.yaml         mysql_deployment.yaml  pv_wordpress.yaml  wordpress.yaml
+ubuntu@ip-10-0-1-57:~$ cat cluster-issuer.yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-production
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: lgiraldo1109@gmail.com  # Reemplaza con tu dirección de correo electrónico
+    privateKeySecretRef:
+      name: letsencrypt-production
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+ubuntu@ip-10-0-1-57:~$
