@@ -61,7 +61,6 @@ def decrypt_file(input_file, output_file, d, n):
         file.write(decrypted_text)
 
 if __name__ == "__main__":
-    message = "Hello World"
     
     p, q = generate_prime(1000, 5000), generate_prime(1000, 5000)
 
@@ -76,31 +75,19 @@ if __name__ == "__main__":
 
     d = mod_inverse(e, phi_n)
 
-    print("Public Key: ", e)
-    print("Private Key: ", d)
-    print("n: ", n)
-    print("Phi of n: ", phi_n)
-    print("p: ", p)
-    print("q: ", q)
+    #print("Public Key: ", e)
+    #print("Private Key: ", d)
+    #print("n: ", n)
+    #print("Phi of n: ", phi_n)
+    #print("p: ", p)
+    #print("q: ", q)
 
-    ciphertext = encode(message, e, n)
-
-    print(message)
-    print(ciphertext)
-
-    message_decoded = decode(ciphertext, d, n)
-
-    print("Decoded message ", message_decoded)
-    print("original message ", message)
-
-    input_file = "archivo.txt"
+    input_file = input("Enter path to your file!\n")
     encrypted_file = "encrypted.txt"
     decrypted_file = "decrypted.txt"
 
     # Encrypt and save the file
     encrypt_file(input_file, encrypted_file, e, n)
-    print(f"File '{input_file}' encrypted and saved as '{encrypted_file}'.")
 
     # Decrypt and save the file
     decrypt_file(encrypted_file, decrypted_file, d, n)
-    print(f"File '{encrypted_file}' decrypted and saved as '{decrypted_file}'.")
